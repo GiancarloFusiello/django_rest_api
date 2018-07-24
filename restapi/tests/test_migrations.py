@@ -33,6 +33,14 @@ class TestMigration0002(MigrationTestCase):
     migrate_from = [('restapi', "0001_initial")]
     migrate_to = [('restapi', "0002_load_seed_data")]
 
+    def tearDown(self):
+        # clean up test db
+        Creator = self.old_apps.get_model('restapi', "Creator")
+        Creator.objects.all().delete()
+
+        Prezi = self.old_apps.get_model('restapi', "Prezi")
+        Prezi.objects.all().delete()
+
     def test_migration_0002(self):
         # Test migrating forward
         Creator = self.old_apps.get_model('restapi', "Creator")
