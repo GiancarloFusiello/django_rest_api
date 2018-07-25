@@ -34,4 +34,6 @@ make createsuperuser
 make start
 ```
 
-You can run `make help` to see a list of all of the make commands available.
+> You can run `make help` to see a list of all of the make commands available.
+
+Now you can navigate to `http://localhost:8000/api` to see the available endpoints.
