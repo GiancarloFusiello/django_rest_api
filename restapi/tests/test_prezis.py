@@ -25,7 +25,8 @@ class TestPrezis(APITestCase):
     def test_get_prezis(self):
         url = reverse('prezis-list')
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
 
         results = response.data['results']
         self.assertEqual(len(results), 2)
@@ -33,7 +34,8 @@ class TestPrezis(APITestCase):
     def test_prezi_order(self):
         url = reverse('prezis-list')
         response = self.client.get(url, params={'order': 'DESC'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
 
         results = response.data['results']
         self.assertEqual(results[0]['title'], self.prezis[1].title)
@@ -41,7 +43,8 @@ class TestPrezis(APITestCase):
 
         url = reverse('prezis-list')
         response = self.client.get(url, params={'order': 'ASC'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
 
         results = response.data['results']
         self.assertEqual(results[1]['title'], self.prezis[0].title)
@@ -50,7 +53,8 @@ class TestPrezis(APITestCase):
     def test_get_prezi_by_id(self):
         url = reverse('prezis-detail', args=(self.prezis[0].id,))
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
         self.assertEqual(response.data['id'], str(self.prezis[0].id))
 
     def test_searching_prezi_by_title(self):
@@ -58,7 +62,8 @@ class TestPrezis(APITestCase):
 
         url = reverse('prezis-list')
         response = self.client.get(url, {'search': 'prezi'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
 
         results = response.data['results']
         self.assertEqual(len(results), 1)
@@ -66,7 +71,8 @@ class TestPrezis(APITestCase):
 
         url = reverse('prezis-list')
         response = self.client.get(url, {'search': 'chicken'})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
 
         results = response.data['results']
         self.assertEqual(len(results), 0)
@@ -78,20 +84,37 @@ class TestPrezis(APITestCase):
 
         url = reverse('prezis-detail', args=(self.prezis[0].id,))
         response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
         self.assertEqual(response.data['title'], old_title)
 
-        # try to update instance without being unauthenticated
-        response = self.client.patch(url, data={'title': new_title})
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        # update instance without being unauthenticated
+        data = {
+            'title': new_title
+        }
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN,
+                         msg=response.json())
 
         # check that the instance has not been updated
         url = reverse('prezis-detail', args=(self.prezis[0].id,))
         response = self.client.get(url)
         self.assertEqual(response.data['title'], old_title)
 
-        # try to update the instance with authenticated user
+        # update the instance with authenticated user
         self.client.login(username='user1', password='password123')
-        response = self.client.patch(url, data={'title': new_title})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.patch(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
         self.assertEqual(response.data['title'], new_title)
+
+        # update multiple fields
+        data = {
+            'title': 'even newer title',
+            'picture': 'http://newpicture.com'
+        }
+        response = self.client.put(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK,
+                         msg=response.json())
+        self.assertEqual(response.data['title'], data['title'])
+        self.assertEqual(response.data['picture'], data['picture'])

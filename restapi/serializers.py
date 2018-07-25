@@ -10,7 +10,7 @@ class CreatorSerializer(serializers.ModelSerializer):
 
 
 class PreziSerializer(serializers.ModelSerializer):
-    creator = CreatorSerializer()
+    creator = CreatorSerializer(read_only=True)
 
     class Meta:
         model = Prezi
